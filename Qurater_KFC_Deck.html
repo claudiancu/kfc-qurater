@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Qurater for KFC — Centralized Delivery Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --qblue:   #1B3B8B;
+      --qnavy:   #0F1E4A;
+      --qorange: #E84020;
+      --qorange-h: #C93518;
+      --qbg:     #F4F6FB;
+      --white:   #ffffff;
+      --text:    #0F1E4A;
+      --muted:   rgba(15,30,74,0.55);
+      --subtle:  rgba(15,30,74,0.08);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--qbg);
+      color: var(--text);
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* ── GRAIN ── */
+    .grain::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      opacity: 0.035;
+      pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 200px 200px;
+      z-index: 9999;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; width: 100%; z-index: 100;
+      background: white;
+      height: 68px;
+      display: flex; align-items: center;
+      border-bottom: 1px solid rgba(15,30,74,0.07);
+      box-shadow: 0 1px 0 rgba(15,30,74,0.06);
+      transition: box-shadow 0.3s;
+    }
+    nav.scrolled { box-shadow: 0 4px 24px rgba(15,30,74,0.10); }
+    .nav-inner {
+      max-width: 1100px; margin: 0 auto; width: 100%; padding: 0 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-logo {
+      font-family: 'Sora', sans-serif; font-weight: 800; font-size: 1.25rem;
+      color: var(--qblue); text-decoration: none; display: flex; align-items: center; gap: 0.5rem;
+    }
+    .nav-logo .dot { width: 8px; height: 8px; background: var(--qorange); border-radius: 50%; }
+    .nav-links { display: flex; align-items: center; gap: 2rem; }
+    .nav-links a {
+      font-size: 0.85rem; font-weight: 500; color: var(--text);
+      text-decoration: none; opacity: 0.65; transition: opacity 0.2s;
+    }
+    .nav-links a:hover { opacity: 1; }
+    .nav-badge {
+      background: rgba(232,64,32,0.08); color: var(--qorange);
+      font-size: 0.75rem; font-weight: 600; padding: 5px 14px;
+      border-radius: 999px; border: 1px solid rgba(232,64,32,0.2);
+      font-family: 'Inter', sans-serif;
+    }
+    .progress-bar {
+      position: fixed; top: 68px; left: 0; height: 3px;
+      background: linear-gradient(90deg, var(--qorange), #FF6B47);
+      width: 0%; z-index: 101; transition: width 0.1s linear;
+      border-radius: 0 2px 2px 0;
+    }
+
+    /* ── SHARED ── */
+    .section-pill {
+      display: inline-flex; align-items: center;
+      background: rgba(27,59,139,0.07); color: var(--qblue);
+      font-family: 'Inter', sans-serif; font-size: 0.72rem; font-weight: 600;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 5px 14px; border-radius: 999px;
+      border: 1px solid rgba(27,59,139,0.14);
+    }
+    .section-pill.light {
+      background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.8);
+      border-color: rgba(255,255,255,0.2);
+    }
+    .text-gradient {
+      background-image: linear-gradient(135deg, #E84020, #FF6B47);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 2rem; }
+
+    /* ── SECTION STYLES ── */
+    .section-light { background: white; }
+    .section-bg { background: var(--qbg); }
+    .section-dark {
+      background: radial-gradient(ellipse 70% 60% at 80% 50%, rgba(27,59,139,0.4) 0%, transparent 70%),
+                  radial-gradient(ellipse 40% 50% at 10% 50%, rgba(232,64,32,0.12) 0%, transparent 60%),
+                  #0F1E4A;
+      position: relative; overflow: hidden;
+    }
+    .section-dark::before {
+      content: ''; position: absolute; inset: 0; opacity: 0.04; pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 200px 200px; z-index: 0;
+    }
+    .section-dark > * { position: relative; z-index: 1; }
+
+    /* ── BUTTONS ── */
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--qorange); color: white;
+      font-family: 'Inter', sans-serif; font-weight: 600; font-size: 0.9375rem;
+      padding: 13px 28px; border-radius: 10px; border: none; cursor: pointer;
+      text-decoration: none;
+      box-shadow: 0 4px 16px rgba(232,64,32,0.35), 0 2px 6px rgba(232,64,32,0.2);
+      transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.25s ease, background 0.2s;
+      position: relative; overflow: hidden;
+    }
+    .btn-primary::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .btn-primary:hover { background: var(--qorange-h); transform: translateY(-2px); box-shadow: 0 8px 28px rgba(232,64,32,0.45); }
+    .btn-outline {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: transparent; color: white;
+      font-family: 'Inter', sans-serif; font-weight: 600; font-size: 0.9375rem;
+      padding: 13px 28px; border-radius: 10px;
+      border: 2px solid rgba(255,255,255,0.35); cursor: pointer; text-decoration: none;
+      transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1), background 0.2s;
+    }
+    .btn-outline:hover { background: rgba(255,255,255,0.1); transform: translateY(-2px); }
+
+    /* ── CARDS ── */
+    .card {
+      background: white; border-radius: 20px; padding: 2rem;
+      border: 1px solid rgba(15,30,74,0.07);
+      box-shadow: 0 4px 16px rgba(15,30,74,0.06), 0 1px 4px rgba(15,30,74,0.04);
+      transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.25s;
+    }
+    .card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(15,30,74,0.12); }
+    .card-dark {
+      background: rgba(255,255,255,0.06); border-radius: 20px; padding: 2rem;
+      border: 1px solid rgba(255,255,255,0.1);
+      backdrop-filter: blur(8px);
+    }
+
+    /* ── HERO ── */
+    #hero {
+      min-height: 100vh; padding-top: 68px;
+      background: radial-gradient(ellipse 80% 60% at 60% -10%, rgba(27,59,139,0.35) 0%, transparent 70%),
+                  radial-gradient(ellipse 50% 40% at 20% 80%, rgba(232,64,32,0.15) 0%, transparent 60%),
+                  #0F1E4A;
+      display: flex; align-items: center; position: relative; overflow: hidden;
+    }
+    #hero::before {
+      content: ''; position: absolute; inset: 0; opacity: 0.04;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 200px 200px;
+    }
+    .hero-circles .c {
+      position: absolute; border-radius: 50%; border: 1px solid rgba(255,255,255,0.07);
+      top: 50%; transform: translateY(-50%);
+    }
+    @keyframes spin { to { transform: translateY(-50%) rotate(360deg); } }
+    .hero-circles .c1 { width: 700px; height: 700px; right: -220px; animation: spin 22s linear infinite; }
+    .hero-circles .c2 { width: 500px; height: 500px; right: -60px; animation: spin 32s linear infinite reverse; border-color: rgba(255,255,255,0.10); }
+    .hero-circles .c3 { width: 300px; height: 300px; right: 120px; animation: spin 46s linear infinite; border-color: rgba(255,255,255,0.14); }
+    .hero-dot {
+      position: absolute; width: 12px; height: 12px; background: #E84020; border-radius: 50%;
+      top: calc(50% - 138px); right: 316px;
+      box-shadow: 0 0 24px rgba(232,64,32,0.7), 0 0 8px rgba(232,64,32,0.5);
+    }
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fu1 { animation: fade-up 0.7s cubic-bezier(0.34,1.56,0.64,1) 0.1s both; }
+    .fu2 { animation: fade-up 0.7s cubic-bezier(0.34,1.56,0.64,1) 0.25s both; }
+    .fu3 { animation: fade-up 0.7s cubic-bezier(0.34,1.56,0.64,1) 0.4s both; }
+    .fu4 { animation: fade-up 0.7s cubic-bezier(0.34,1.56,0.64,1) 0.55s both; }
+    .fu5 { animation: fade-up 0.7s cubic-bezier(0.34,1.56,0.64,1) 0.65s both; }
+
+    /* Dashboard mockup */
+    .dashboard-mockup {
+      background: rgba(255,255,255,0.08); backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 20px; padding: 1.5rem;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.2);
+    }
+    .bar { border-radius: 4px 4px 0 0; background: linear-gradient(to top, #1B3B8B, #E84020); flex: 1; }
+
+    /* ── STATS ROW ── */
+    .stats-row {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      background: white; border-radius: 20px; overflow: hidden;
+      border: 1px solid rgba(15,30,74,0.07);
+      box-shadow: 0 4px 24px rgba(15,30,74,0.06);
+    }
+    .stat-cell {
+      text-align: center; padding: 2.5rem 1.5rem;
+      border-right: 1px solid rgba(15,30,74,0.07);
+    }
+    .stat-cell:last-child { border-right: none; }
+    .stat-num {
+      font-family: 'Sora', sans-serif; font-weight: 800;
+      font-size: 2.75rem; line-height: 1; color: var(--qblue); margin-bottom: 0.4rem;
+    }
+    .stat-label { font-size: 0.875rem; font-weight: 500; color: var(--muted); }
+
+    /* ── PROBLEM CARDS ── */
+    .problem-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+    .problem-card {
+      background: white; border-radius: 18px; padding: 1.75rem;
+      border: 1px solid rgba(15,30,74,0.07);
+      box-shadow: 0 2px 12px rgba(15,30,74,0.05);
+      transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.25s;
+    }
+    .problem-card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(15,30,74,0.10); }
+    .problem-icon {
+      width: 48px; height: 48px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; margin-bottom: 1rem;
+      background: rgba(232,64,32,0.07);
+    }
+    .problem-card h3 { font-family: 'Sora', sans-serif; font-weight: 700; font-size: 1.05rem; color: var(--qnavy); margin-bottom: 0.6rem; }
+    .problem-card p { font-size: 0.9rem; line-height: 1.65; color: var(--muted); }
+    .cost-badge {
+      display: inline-block; margin-top: 0.85rem;
+      background: rgba(232,64,32,0.07); color: var(--qorange);
+      font-size: 0.75rem; font-weight: 600; padding: 4px 12px;
+      border-radius: 999px; border: 1px solid rgba(232,64,32,0.18);
+    }
+
+    /* ── CAPABILITY TABLE ── */
+    .cap-table { width: 100%; border-collapse: collapse; }
+    .cap-table thead th {
+      font-family: 'Inter', sans-serif; font-size: 0.72rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted);
+      padding: 0.75rem 1.25rem; background: var(--qbg);
+      border-bottom: 1px solid rgba(15,30,74,0.08);
+      text-align: left;
+    }
+    .cap-table tbody tr {
+      border-bottom: 1px solid rgba(15,30,74,0.06);
+      transition: background 0.15s;
+    }
+    .cap-table tbody tr:hover { background: rgba(27,59,139,0.025); }
+    .cap-table tbody tr:last-child { border-bottom: none; }
+    .cap-table td { padding: 1.25rem; vertical-align: top; font-size: 0.9rem; }
+    .cap-num {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--qblue); color: white;
+      font-family: 'Sora', sans-serif; font-weight: 700; font-size: 0.8rem;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .cap-title { font-family: 'Sora', sans-serif; font-weight: 700; color: var(--qnavy); font-size: 0.95rem; }
+    .cap-problem { color: var(--muted); line-height: 1.6; }
+    .cap-solution { color: var(--text); line-height: 1.6; }
+    .cap-badge {
+      display: inline-block; margin-top: 0.5rem;
+      background: rgba(27,59,139,0.07); color: var(--qblue);
+      font-size: 0.72rem; font-weight: 600; padding: 3px 10px;
+      border-radius: 999px; border: 1px solid rgba(27,59,139,0.14);
+    }
+
+    /* ── BEFORE/AFTER ── */
+    .ba-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    .ba-col-header {
+      font-family: 'Sora', sans-serif; font-weight: 700; font-size: 0.9rem;
+      letter-spacing: 0.04em; text-transform: uppercase;
+      padding: 0.875rem 1.25rem; border-radius: 12px;
+      margin-bottom: 0.75rem; text-align: center;
+    }
+    .ba-col-header.before { background: rgba(15,30,74,0.06); color: var(--muted); }
+    .ba-col-header.after { background: var(--qblue); color: white; }
+    .ba-item {
+      padding: 1rem 1.25rem; border-radius: 12px; font-size: 0.9rem;
+      line-height: 1.6; margin-bottom: 0.625rem;
+    }
+    .ba-item.before { background: rgba(15,30,74,0.04); color: var(--muted); border: 1px solid rgba(15,30,74,0.07); }
+    .ba-item.after { background: rgba(27,59,139,0.06); color: var(--qnavy); border: 1px solid rgba(27,59,139,0.12); }
+    .ba-item.after strong { color: var(--qblue); }
+
+    /* ── PROOF STATS ── */
+    .proof-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
+    .proof-card {
+      background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 18px; padding: 2rem;
+      transition: background 0.25s, transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .proof-card:hover { background: rgba(255,255,255,0.11); transform: translateY(-3px); }
+    .proof-num { font-family: 'Sora', sans-serif; font-weight: 800; font-size: 3rem; line-height: 1; color: var(--qorange); margin-bottom: 0.5rem; }
+    .proof-label { font-size: 0.9rem; line-height: 1.55; color: rgba(255,255,255,0.65); }
+
+    /* ── WHY GRID ── */
+    .why-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+    .why-card {
+      border-radius: 18px; padding: 2rem;
+      transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .why-card:hover { transform: translateY(-3px); }
+    .why-card.dark { background: var(--qblue); }
+    .why-card.light { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); }
+    .why-card h3 { font-family: 'Sora', sans-serif; font-weight: 700; font-size: 1.05rem; color: white; margin-bottom: 0.75rem; }
+    .why-card p { font-size: 0.9rem; line-height: 1.65; color: rgba(255,255,255,0.6); }
+
+    /* ── ONBOARDING TIMELINE ── */
+    .timeline { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem; position: relative; }
+    .timeline::before {
+      content: ''; position: absolute; top: 22px; left: 10%; right: 10%; height: 2px;
+      border-top: 2px dashed rgba(15,30,74,0.15); z-index: 0;
+    }
+    .timeline-step { text-align: center; position: relative; z-index: 1; }
+    .t-num {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: var(--qblue); color: white;
+      font-family: 'Sora', sans-serif; font-weight: 700; font-size: 1rem;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1rem;
+      box-shadow: 0 8px 24px rgba(27,59,139,0.3);
+    }
+    .t-num.accent { background: var(--qorange); box-shadow: 0 8px 24px rgba(232,64,32,0.35); }
+    .t-week { font-size: 0.72rem; font-weight: 600; color: var(--qorange); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 0.4rem; }
+    .t-title { font-family: 'Sora', sans-serif; font-weight: 700; font-size: 1rem; color: var(--qnavy); margin-bottom: 0.5rem; }
+    .t-desc { font-size: 0.85rem; line-height: 1.6; color: var(--muted); }
+
+    /* ── NEXT STEP / PILOT ── */
+    .pilot-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.25rem; }
+    .pilot-card {
+      border-radius: 18px; padding: 1.75rem;
+    }
+    .pilot-card.a { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); }
+    .pilot-card.b { background: var(--qblue); }
+    .pilot-card.c { background: rgba(232,64,32,0.12); border: 1px solid rgba(232,64,32,0.25); }
+    .pilot-card h3 { font-family: 'Sora', sans-serif; font-weight: 700; color: white; font-size: 1rem; margin-bottom: 1rem; }
+    .pilot-card ul { list-style: none; }
+    .pilot-card ul li {
+      font-size: 0.875rem; line-height: 1.6; color: rgba(255,255,255,0.65);
+      padding: 0.4rem 0; border-bottom: 1px solid rgba(255,255,255,0.07);
+      display: flex; gap: 0.5rem; align-items: flex-start;
+    }
+    .pilot-card ul li:last-child { border-bottom: none; }
+    .pilot-card ul li::before { content: '→'; color: var(--qorange); flex-shrink: 0; margin-top: 1px; }
+    .pilot-card.c ul li { color: rgba(255,200,180,0.9); }
+    .pilot-card.c ul li::before { color: #FF8C70; }
+
+    /* ── TEAM ── */
+    .team-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
+    .team-card { text-align: center; }
+    .team-avatar {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: var(--qblue); color: white;
+      font-family: 'Sora', sans-serif; font-weight: 700; font-size: 1.1rem;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 0.875rem;
+      border: 2px solid rgba(255,255,255,0.1);
+    }
+    .team-name { font-family: 'Sora', sans-serif; font-weight: 700; font-size: 0.95rem; color: white; margin-bottom: 0.2rem; }
+    .team-role { font-size: 0.8rem; color: rgba(255,255,255,0.5); line-height: 1.4; }
+
+    /* ── NUMBERS PANEL ── */
+    .numbers-panel {
+      background: rgba(255,255,255,0.05); border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.1); padding: 2rem;
+    }
+    .num-row { display: flex; align-items: baseline; gap: 0.75rem; padding: 0.75rem 0; border-bottom: 1px solid rgba(255,255,255,0.07); }
+    .num-row:last-child { border-bottom: none; }
+    .num-val { font-family: 'Sora', sans-serif; font-weight: 800; font-size: 1.75rem; color: var(--qorange); flex-shrink: 0; }
+    .num-desc { font-size: 0.875rem; color: rgba(255,255,255,0.55); line-height: 1.4; }
+
+    /* ── CTA SECTION ── */
+    .cta-section {
+      background: linear-gradient(135deg, #E84020 0%, #C93518 60%, #a82c14 100%);
+      padding: 5rem 0; text-align: center;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--qnavy); padding: 2.5rem 0;
+      text-align: center;
+    }
+
+    /* ── UTILITY ── */
+    .py-24 { padding-top: 6rem; padding-bottom: 6rem; }
+    .py-20 { padding-top: 5rem; padding-bottom: 5rem; }
+    .py-16 { padding-top: 4rem; padding-bottom: 4rem; }
+    .mb-3 { margin-bottom: 0.75rem; }
+    .mb-4 { margin-bottom: 1rem; }
+    .mb-5 { margin-bottom: 1.25rem; }
+    .mb-6 { margin-bottom: 1.5rem; }
+    .mb-8 { margin-bottom: 2rem; }
+    .mb-12 { margin-bottom: 3rem; }
+    .mb-16 { margin-bottom: 4rem; }
+    .mt-3 { margin-top: 0.75rem; }
+    .mt-4 { margin-top: 1rem; }
+    h2.display {
+      font-family: 'Sora', sans-serif; font-weight: 800;
+      font-size: clamp(1.9rem, 3.5vw, 2.6rem);
+      line-height: 1.18; letter-spacing: -0.03em;
+    }
+    h3.display {
+      font-family: 'Sora', sans-serif; font-weight: 700;
+      font-size: 1.35rem; line-height: 1.3; letter-spacing: -0.02em;
+    }
+    .lead { font-size: 1.05rem; line-height: 1.75; color: var(--muted); }
+    .lead-light { font-size: 1.05rem; line-height: 1.75; color: rgba(255,255,255,0.7); }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: start; }
+    .grid-2-center { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center; }
+    .section-label-wrap { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.75rem; }
+
+    /* Scroll fade-in */
+    .reveal {
+      opacity: 0; transform: translateY(20px);
+      transition: opacity 0.6s cubic-bezier(0.34,1.56,0.64,1), transform 0.6s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-d1 { transition-delay: 0.05s; }
+    .reveal-d2 { transition-delay: 0.15s; }
+    .reveal-d3 { transition-delay: 0.25s; }
+    .reveal-d4 { transition-delay: 0.35s; }
+  </style>
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+  <div class="progress-bar" id="progress"></div>
+
+  <!-- NAV -->
+  <nav id="navbar">
+    <div class="nav-inner">
+      <a href="#hero" class="nav-logo">
+        <span>Qurater</span><div class="dot"></div>
+      </a>
+      <div class="nav-links">
+        <a href="#problem">The Problem</a>
+        <a href="#solution">Solution</a>
+        <a href="#proof">Proof</a>
+        <a href="#next-step">Next Step</a>
+        <span class="nav-badge">KFC — Confidential</span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SLIDE 1 — HERO / COVER
+  ══════════════════════════════════════════════════════════════ -->
+  <section id="hero">
+    <div class="hero-circles" aria-hidden="true">
+      <div class="c c1"></div>
+      <div class="c c2"></div>
+      <div class="c c3"></div>
+      <div class="hero-dot"></div>
+    </div>
+
+    <div class="container" style="width:100%; padding: 5rem 2rem;">
+      <div class="grid-2-center">
+        <!-- Left -->
+        <div>
+          <div class="fu1 mb-6">
+            <span style="display:inline-block;background:rgba(255,255,255,0.1);backdrop-filter:blur(8px);color:rgba(255,255,255,0.9);font-size:0.75rem;font-weight:600;letter-spacing:0.06em;padding:8px 18px;border-radius:999px;border:1px solid rgba(255,255,255,0.2);font-family:'Inter',sans-serif;">
+              Prepared exclusively for KFC Romania
+            </span>
+          </div>
+
+          <h1 class="fu2" style="font-family:'Sora',sans-serif;font-weight:800;font-size:clamp(2.4rem,5vw,3.5rem);line-height:1.1;letter-spacing:-0.03em;color:white;margin-bottom:1.5rem;">
+            Centralized control<br>for your delivery<br><span class="text-gradient">operation.</span>
+          </h1>
+
+          <p class="fu3" style="font-size:1.1rem;line-height:1.75;color:rgba(255,255,255,0.72);max-width:440px;margin-bottom:2rem;">
+            One platform across Glovo, Bolt Food, and Wolt — consolidating your data, menus, and campaigns for every one of your locations, in real time.
+          </p>
+
+          <div class="fu4" style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1.5rem;">
+            <a href="#next-step" class="btn-primary">Request a Pilot →</a>
+            <a href="#solution" class="btn-outline">See the Platform</a>
+          </div>
+
+          <p class="fu5" style="font-size:0.82rem;color:rgba(255,255,255,0.4);">
+            20–50 locations &nbsp;·&nbsp; Glovo + Bolt Food + Wolt &nbsp;·&nbsp; Full operational coverage
+          </p>
+        </div>
+
+        <!-- Right: Dashboard Mockup -->
+        <div class="fu3" aria-hidden="true">
+          <div class="dashboard-mockup">
+            <!-- Header -->
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
+              <span style="color:rgba(255,255,255,0.8);font-size:0.85rem;font-family:'Sora',sans-serif;font-weight:600;">📊 Qurater — KFC Overview</span>
+              <div style="display:flex;gap:6px;">
+                <div style="width:11px;height:11px;border-radius:50%;background:rgba(232,64,32,0.7);"></div>
+                <div style="width:11px;height:11px;border-radius:50%;background:rgba(250,204,21,0.7);"></div>
+                <div style="width:11px;height:11px;border-radius:50%;background:rgba(74,222,128,0.7);"></div>
+              </div>
+            </div>
+
+            <!-- Location filter -->
+            <div style="margin-bottom:1rem;">
+              <span style="background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.45);font-size:0.7rem;font-family:'Inter',sans-serif;padding:4px 12px;border-radius:6px;border:1px solid rgba(255,255,255,0.1);">All Locations (38)  ▾</span>
+              <span style="background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.45);font-size:0.7rem;font-family:'Inter',sans-serif;padding:4px 12px;border-radius:6px;border:1px solid rgba(255,255,255,0.1);margin-left:6px;">Last 7 days  ▾</span>
+            </div>
+
+            <!-- Stats row -->
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1rem;">
+              <div style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px;">
+                <p style="color:rgba(255,255,255,0.4);font-size:0.62rem;font-family:'Inter',sans-serif;margin-bottom:4px;">Total Orders</p>
+                <p style="color:white;font-family:'Sora',sans-serif;font-weight:700;font-size:1.2rem;line-height:1;">12,840</p>
+                <p style="color:#4ade80;font-size:0.62rem;font-family:'Inter',sans-serif;margin-top:3px;">↑ +9.2%</p>
+              </div>
+              <div style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px;">
+                <p style="color:rgba(255,255,255,0.4);font-size:0.62rem;font-family:'Inter',sans-serif;margin-bottom:4px;">Revenue</p>
+                <p style="color:white;font-family:'Sora',sans-serif;font-weight:700;font-size:1.2rem;line-height:1;">€184K</p>
+                <p style="color:#4ade80;font-size:0.62rem;font-family:'Inter',sans-serif;margin-top:3px;">↑ +11.4%</p>
+              </div>
+              <div style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px;">
+                <p style="color:rgba(255,255,255,0.4);font-size:0.62rem;font-family:'Inter',sans-serif;margin-bottom:4px;">Locations Live</p>
+                <p style="color:white;font-family:'Sora',sans-serif;font-weight:700;font-size:1.2rem;line-height:1;">38 / 38</p>
+                <p style="color:#4ade80;font-size:0.62rem;font-family:'Inter',sans-serif;margin-top:3px;">100% uptime</p>
+              </div>
+            </div>
+
+            <!-- Bar chart -->
+            <div style="margin-bottom:1rem;">
+              <p style="color:rgba(255,255,255,0.3);font-size:0.6rem;font-family:'Inter',sans-serif;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.07em;">Weekly Order Volume — All Locations</p>
+              <div style="display:flex;align-items:flex-end;gap:5px;height:72px;">
+                <div class="bar" style="height:58%;"></div>
+                <div class="bar" style="height:70%;"></div>
+                <div class="bar" style="height:45%;"></div>
+                <div class="bar" style="height:84%;"></div>
+                <div class="bar" style="height:62%;"></div>
+                <div class="bar" style="height:93%;box-shadow:0 0 14px rgba(232,64,32,0.4);"></div>
+                <div class="bar" style="height:75%;"></div>
+              </div>
+              <div style="display:flex;gap:5px;margin-top:5px;">
+                <span style="flex:1;text-align:center;color:rgba(255,255,255,0.2);font-size:0.52rem;font-family:'Inter',sans-serif;">M</span>
+                <span style="flex:1;text-align:center;color:rgba(255,255,255,0.2);font-size:0.52rem;font-family:'Inter',sans-serif;">T</span>
+                <span style="flex:1;text-align:center;color:rgba(255,255,255,0.2);font-size:0.52rem;font-family:'Inter',sans-serif;">W</span>
+                <span style="flex:1;text-align:center;color:rgba(255,255,255,0.2);font-size:0.52rem;font-family:'Inter',sans-serif;">T</span>
+                <span style="flex:1;text-align:center;color:rgba(255,255,255,0.2);font-size:0.52rem;font-family:'Inter',sans-serif;">F</span>
+                <span style="flex:1;text-align:center;color:rgba(255,255,255,0.2);font-size:0.52rem;font-family:'Inter',sans-serif;">S</span>
+                <span style="flex:1;text-align:center;color:rgba(255,255,255,0.2);font-size:0.52rem;font-family:'Inter',sans-serif;">S</span>
+              </div>
+            </div>
+
+            <!-- Platform badges -->
+            <div style="display:flex;gap:7px;flex-wrap:wrap;">
+              <span style="background:rgba(0,168,71,0.18);color:#4ade80;font-size:0.68rem;font-family:'Inter',sans-serif;font-weight:600;padding:4px 11px;border-radius:999px;border:1px solid rgba(0,168,71,0.3);">● Glovo</span>
+              <span style="background:rgba(150,205,40,0.18);color:#bef264;font-size:0.68rem;font-family:'Inter',sans-serif;font-weight:600;padding:4px 11px;border-radius:999px;border:1px solid rgba(150,205,40,0.3);">● Bolt Food</span>
+              <span style="background:rgba(27,59,139,0.3);color:#93c5fd;font-size:0.68rem;font-family:'Inter',sans-serif;font-weight:600;padding:4px 11px;border-radius:999px;border:1px solid rgba(27,59,139,0.4);">● Wolt</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       STATS BAR
+  ══════════════════════════════════════════════════════════════ -->
+  <section class="section-bg py-20">
+    <div class="container">
+      <div class="stats-row reveal">
+        <div class="stat-cell">
+          <div class="stat-num">50+</div>
+          <div class="stat-label">Paying brands on platform</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-num">450+</div>
+          <div class="stat-label">Locations managed</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-num">0</div>
+          <div class="stat-label">Churned enterprise accounts</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-num">2.5×</div>
+          <div class="stat-label">Operator capacity increase</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SLIDE 2 — WHAT WE HEARD
+  ══════════════════════════════════════════════════════════════ -->
+  <section id="problem" class="section-light py-24">
+    <div class="container">
+      <div class="section-label-wrap reveal">
+        <span class="section-pill">From our conversation</span>
+        <h2 class="display" style="color:var(--qnavy);">What we heard from your team.</h2>
+        <p class="lead" style="max-width:580px;">Managing delivery across 20–50 KFC locations — across three platforms — creates a level of operational complexity that standard tools weren't designed for.</p>
+      </div>
+
+      <div class="problem-grid">
+        <div class="problem-card reveal reveal-d1">
+          <div class="problem-icon">📊</div>
+          <h3>Fragmented data, no unified view</h3>
+          <p>Glovo, Bolt Food, and Wolt each have their own dashboards, reporting formats, and data logic. Getting a consolidated view of what's happening across all locations requires manual exports, cross-referencing spreadsheets, and hours of work — every single week.</p>
+          <span class="cost-badge">~1 full day/week lost to manual reporting</span>
+        </div>
+
+        <div class="problem-card reveal reveal-d2">
+          <div class="problem-icon">🍔</div>
+          <h3>Menu updates that don't scale</h3>
+          <p>A single menu change — a price update, a product swap, an availability flag — requires logging into each platform separately. Across 20–50 locations and three platforms, inconsistencies accumulate. Errors happen. And the team that should be focused on performance is doing maintenance.</p>
+          <span class="cost-badge">Inconsistencies across platforms compound over time</span>
+        </div>
+
+        <div class="problem-card reveal reveal-d3">
+          <div class="problem-icon">📣</div>
+          <h3>Campaigns running without feedback</h3>
+          <p>Promotions go live across platforms but tracking their actual impact — by location, by channel, by time period — requires manual work that rarely happens fast enough to adjust. Budget gets spent without clear visibility into what's working and what isn't.</p>
+          <span class="cost-badge">Marketing spend without ROI clarity</span>
+        </div>
+
+        <div class="problem-card reveal reveal-d4">
+          <div class="problem-icon">🔍</div>
+          <h3>Limited visibility into market position</h3>
+          <p>At your scale, results don't just depend on what you do internally — they depend on how the market moves around you. Without real-time competitor data on pricing, promotions, and positioning, you're reacting rather than leading.</p>
+          <span class="cost-badge">Reactive decisions instead of proactive ones</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SLIDE 3 — THE COST
+  ══════════════════════════════════════════════════════════════ -->
+  <section class="section-dark py-24">
+    <div class="container">
+      <div class="section-label-wrap reveal">
+        <span class="section-pill light">The status quo</span>
+        <h2 class="display" style="color:white;">What fragmentation actually costs.</h2>
+        <p class="lead-light" style="max-width:560px;">Every week this continues, the operational and commercial cost compounds. Here's what that looks like in practice.</p>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;">
+        <div class="card-dark reveal reveal-d1">
+          <div style="font-size:2rem;margin-bottom:1rem;">⏱️</div>
+          <h3 style="font-family:'Sora',sans-serif;font-weight:700;color:white;font-size:1.05rem;margin-bottom:0.6rem;">Time</h3>
+          <p style="color:var(--qorange);font-family:'Sora',sans-serif;font-weight:700;font-size:1.1rem;margin-bottom:0.5rem;">1 full working day/week</p>
+          <p style="font-size:0.9rem;line-height:1.65;color:rgba(255,255,255,0.55);">Spent on manual data collection, cross-platform comparisons, and reporting that could be fully automated.</p>
+        </div>
+        <div class="card-dark reveal reveal-d2">
+          <div style="font-size:2rem;margin-bottom:1rem;">⚠️</div>
+          <h3 style="font-family:'Sora',sans-serif;font-weight:700;color:white;font-size:1.05rem;margin-bottom:0.6rem;">Errors</h3>
+          <p style="color:var(--qorange);font-family:'Sora',sans-serif;font-weight:700;font-size:1.1rem;margin-bottom:0.5rem;">Inconsistencies multiply at scale</p>
+          <p style="font-size:0.9rem;line-height:1.65;color:rgba(255,255,255,0.55);">Pricing gaps, availability mismatches, and menu discrepancies across platforms — each a small friction point that compounds across 20–50 locations.</p>
+        </div>
+        <div class="card-dark reveal reveal-d3">
+          <div style="font-size:2rem;margin-bottom:1rem;">💸</div>
+          <h3 style="font-family:'Sora',sans-serif;font-weight:700;color:white;font-size:1.05rem;margin-bottom:0.6rem;">Missed Opportunity</h3>
+          <p style="color:var(--qorange);font-family:'Sora',sans-serif;font-weight:700;font-size:1.1rem;margin-bottom:0.5rem;">Campaigns running blind</p>
+          <p style="font-size:0.9rem;line-height:1.65;color:rgba(255,255,255,0.55);">Marketing budget allocated on instinct rather than data. Underperforming locations stay underperforming because the signal arrives too late to act.</p>
+        </div>
+      </div>
+
+      <div class="reveal mt-4" style="border-left:3px solid var(--qorange);padding-left:1.5rem;margin-top:2.5rem;">
+        <p style="font-family:'Sora',sans-serif;font-weight:700;font-size:1.1rem;color:white;">The good news: all three of these are solvable with the right infrastructure in place.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SLIDE 4 — WHAT QURATER DOES
+  ══════════════════════════════════════════════════════════════ -->
+  <section id="solution" class="section-light py-24">
+    <div class="container">
+      <div class="section-label-wrap reveal">
+        <span class="section-pill">The solution</span>
+        <h2 class="display" style="color:var(--qnavy);">One platform. Every platform. All locations.</h2>
+      </div>
+
+      <div class="grid-2-center mb-12">
+        <div class="reveal">
+          <p style="font-size:1.15rem;font-family:'Sora',sans-serif;font-weight:700;color:var(--qnavy);line-height:1.5;margin-bottom:1rem;border-left:3px solid var(--qorange);padding-left:1.25rem;">
+            One platform for multi-location brands to manage menus, run campaigns, and measure performance across every delivery channel — in real time.
+          </p>
+          <p class="lead">Qurater sits as a centralization layer on top of Glovo, Bolt Food, and Wolt — connecting your data, your menus, and your campaigns into a single, controllable environment.</p>
+          <p class="lead mt-4">For a brand at KFC's scale, this means a meaningful reduction in manual work, faster decisions, and a consistent standard of execution across every location and every platform.</p>
+        </div>
+
+        <div class="reveal reveal-d2" style="display:grid;grid-template-columns:1fr 1fr;gap:0.875rem;">
+          <div style="background:var(--qblue);border-radius:16px;padding:1.25rem;text-align:center;">
+            <div style="font-size:1.5rem;margin-bottom:0.5rem;">📊</div>
+            <p style="font-family:'Sora',sans-serif;font-weight:700;color:white;font-size:0.9rem;margin-bottom:0.3rem;">Reporting &amp; Analytics</p>
+            <p style="font-size:0.75rem;color:rgba(255,255,255,0.55);line-height:1.4;">Real-time KPIs across all locations and platforms</p>
+          </div>
+          <div style="background:var(--qbg);border-radius:16px;padding:1.25rem;text-align:center;border:1px solid rgba(15,30,74,0.08);">
+            <div style="font-size:1.5rem;margin-bottom:0.5rem;">🍔</div>
+            <p style="font-family:'Sora',sans-serif;font-weight:700;color:var(--qnavy);font-size:0.9rem;margin-bottom:0.3rem;">Menu Management</p>
+            <p style="font-size:0.75rem;color:var(--muted);line-height:1.4;">Centralized sync across all channels</p>
+          </div>
+          <div style="background:var(--qbg);border-radius:16px;padding:1.25rem;text-align:center;border:1px solid rgba(15,30,74,0.08);">
+            <div style="font-size:1.5rem;margin-bottom:0.5rem;">🎯</div>
+            <p style="font-family:'Sora',sans-serif;font-weight:700;color:var(--qnavy);font-size:0.9rem;margin-bottom:0.3rem;">Campaign Management</p>
+            <p style="font-size:0.75rem;color:var(--muted);line-height:1.4;">Launch, track, optimize with ROI feedback</p>
+          </div>
+          <div style="background:var(--qblue);border-radius:16px;padding:1.25rem;text-align:center;">
+            <div style="font-size:1.5rem;margin-bottom:0.5rem;">🏆</div>
+            <p style="font-family:'Sora',sans-serif;font-weight:700;color:white;font-size:0.9rem;margin-bottom:0.3rem;">Competitor Intelligence</p>
+            <p style="font-size:0.75rem;color:rgba(255,255,255,0.55);line-height:1.4;">Real-time market positioning data</p>
+          </div>
+          <div style="background:linear-gradient(135deg,var(--qorange),#FF6B47);border-radius:16px;padding:1.25rem;text-align:center;grid-column:1/-1;">
+            <div style="font-size:1.5rem;margin-bottom:0.5rem;">⚡</div>
+            <p style="font-family:'Sora',sans-serif;font-weight:700;color:white;font-size:0.9rem;margin-bottom:0.3rem;">AI Assistance</p>
+            <p style="font-size:0.75rem;color:rgba(255,255,255,0.8);line-height:1.4;">Automated insights and prioritized recommendations</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SLIDE 5 — CAPABILITY TABLE
+  ══════════════════════════════════════════════════════════════ -->
+  <section class="section-bg py-24">
+    <div class="container">
+      <div class="section-label-wrap reveal">
+        <span class="section-pill">Platform capabilities</span>
+        <h2 class="display" style="color:var(--qnavy);">How each feature solves a specific problem.</h2>
+      </div>
+
+      <div class="reveal" style="background:white;border-radius:20px;overflow:hidden;border:1px solid rgba(15,30,74,0.07);box-shadow:0 4px 24px rgba(15,30,74,0.06);">
+        <table class="cap-table">
+          <thead>
+            <tr>
+              <th style="width:3rem;"></th>
+              <th style="width:16%;">Capability</th>
+              <th style="width:40%;">The problem it solves</th>
+              <th>What changes for your team</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><div class="cap-num">01</div></td>
+              <td><span class="cap-title">Reporting &amp; Analytics</span></td>
+              <td class="cap-problem">Data scattered across three platform dashboards with different metrics and no side-by-side comparison across locations.</td>
+              <td class="cap-solution">One consolidated view across all locations and platforms. Filter by location, channel, or period. Daily performance reviews replace weekly manual reports. <span class="cap-badge">30 min vs 1 full day</span></td>
+            </tr>
+            <tr>
+              <td><div class="cap-num">02</div></td>
+              <td><span class="cap-title">Menu Management</span></td>
+              <td class="cap-problem">A single menu update requires logging into each platform separately — creating inconsistencies and increasing error risk across 20–50 locations.</td>
+              <td class="cap-solution">Make a change once, push it everywhere. Products, prices, availability — synced across Glovo, Bolt, and Wolt simultaneously. <span class="cap-badge">Up to 50% time reduction</span></td>
+            </tr>
+            <tr>
+              <td><div class="cap-num">03</div></td>
+              <td><span class="cap-title">Campaign Management</span></td>
+              <td class="cap-problem">Promotions are launched without clear feedback loops. Difficult to know which campaigns are working, at which locations, and why.</td>
+              <td class="cap-solution">Plan, deploy, and track campaigns from one place. Real-time visibility into sales impact, AOV, and discount spend per campaign, per location, per platform. <span class="cap-badge">20–25% marketing efficiency gain</span></td>
+            </tr>
+            <tr>
+              <td><div class="cap-num">04</div></td>
+              <td><span class="cap-title">Competitor Intelligence</span></td>
+              <td class="cap-problem">At scale, results depend not just on internal execution but on how the market moves. Most brands have limited real-time visibility into competitor activity.</td>
+              <td class="cap-solution">Real-time monitoring of competitor pricing, promotions, and positioning on Glovo, Bolt, and Wolt. Sharper decisions on where to compete and how. <span class="cap-badge">Proactive vs reactive</span></td>
+            </tr>
+            <tr>
+              <td><div class="cap-num" style="background:var(--qorange);">05</div></td>
+              <td><span class="cap-title">AI Assistance</span></td>
+              <td class="cap-problem">Analysis that could inform daily decisions often comes too late — because pulling it together takes too much manual effort.</td>
+              <td class="cap-solution">Automated insights and recommendations surfaced directly in the platform. Know what to act on, not just what happened. <span class="cap-badge">Daily insights, automated</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SLIDE 6 — BEFORE / AFTER
+  ══════════════════════════════════════════════════════════════ -->
+  <section class="section-light py-24">
+    <div class="container">
+      <div class="section-label-wrap reveal">
+        <span class="section-pill">The operational impact</span>
+        <h2 class="display" style="color:var(--qnavy);">What changes when your data works for you.</h2>
+      </div>
+
+      <div class="ba-grid reveal">
+        <div>
+          <div class="ba-col-header before">Before Qurater</div>
+          <div class="ba-item before">1 full day per week spent on manual data collection and reporting across three platforms.</div>
+          <div class="ba-item before">Menu updates applied separately in each platform, with inconsistencies building across locations over time.</div>
+          <div class="ba-item before">Campaigns run without real-time feedback — limited visibility into what's working at which locations.</div>
+          <div class="ba-item before">One operator can effectively manage ~40 locations without centralized tooling.</div>
+          <div class="ba-item before">Performance issues at specific locations identified reactively — often too late to course-correct.</div>
+        </div>
+        <div>
+          <div class="ba-col-header after">With Qurater</div>
+          <div class="ba-item after">The same analysis in <strong>30 minutes</strong> — enabling daily performance reviews, not monthly catch-ups.</div>
+          <div class="ba-item after">One update, synced everywhere. <strong>Up to 50% reduction</strong> in operational time spent on menu management.</div>
+          <div class="ba-item after"><strong>Real-time campaign performance</strong> by location and channel — adjust fast, spend smarter, reduce waste.</div>
+          <div class="ba-item after">The same operator can manage <strong>100+ locations</strong> — a 2.5× increase in operational capacity.</div>
+          <div class="ba-item after">Spot underperforming locations, time slots, or products <strong>quickly</strong> — and act before it becomes a pattern.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SLIDE 7 — PROOF
+  ══════════════════════════════════════════════════════════════ -->
+  <section id="proof" class="section-dark py-24">
+    <div class="container">
+      <div class="section-label-wrap reveal">
+        <span class="section-pill light">Proof points</span>
+        <h2 class="display" style="color:white;">Results from brands operating at scale.</h2>
+        <p class="lead-light" style="max-width:560px;">Qurater manages 450+ locations across Romania with zero churned enterprise accounts. Here's what the data shows.</p>
+      </div>
+
+      <div class="proof-grid">
+        <div class="proof-card reveal reveal-d1">
+          <div class="proof-num">+174%</div>
+          <div class="proof-label">Revenue growth — 4-location brand in Bucharest after joining Qurater</div>
+        </div>
+        <div class="proof-card reveal reveal-d2">
+          <div class="proof-num">50%</div>
+          <div class="proof-label">Reduction in menu management time — 7-location brand, from 22h/week to 11h/week</div>
+        </div>
+        <div class="proof-card reveal reveal-d3">
+          <div class="proof-num">~20–25%</div>
+          <div class="proof-label">Marketing budget efficiency gains through data-driven campaign control and real-time ROI visibility</div>
+        </div>
+        <div class="proof-card reveal reveal-d1">
+          <div class="proof-num">0</div>
+          <div class="proof-label">Churned enterprise accounts since platform launch</div>
+        </div>
+        <div class="proof-card reveal reveal-d2">
+          <div class="proof-num">450+</div>
+          <div class="proof-label">Locations currently managed on the platform across Romania</div>
+        </div>
+        <div class="proof-card reveal reveal-d3">
+          <div class="proof-num">2.5×</div>
+          <div class="proof-label">Increase in locations manageable per operator with Qurater vs without</div>
+        </div>
+      </div>
+
+      <!-- Trickshot callout -->
+      <div class="reveal mt-4" style="margin-top:2.5rem;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:18px;padding:2rem;display:flex;align-items:center;gap:2rem;flex-wrap:wrap;">
+        <div>
+          <span style="display:inline-block;background:var(--qorange);color:white;font-size:0.72rem;font-weight:600;padding:3px 12px;border-radius:999px;font-family:'Inter',sans-serif;margin-bottom:0.75rem;text-transform:uppercase;letter-spacing:0.06em;">Case Study — Named Client</span>
+          <h3 style="font-family:'Sora',sans-serif;font-weight:700;color:white;font-size:1.1rem;margin-bottom:0.4rem;">Trickshot — 4 locations, Bucharest</h3>
+          <p style="font-size:0.9rem;color:rgba(255,255,255,0.6);line-height:1.6;">After onboarding to Qurater: revenue +174%, uptime improved from 71% to 96%, automated reporting at 85% open rate, menu management time reduced by up to 70%.</p>
+        </div>
+        <div style="display:flex;gap:1.5rem;flex-shrink:0;">
+          <div style="text-align:center;">
+            <p style="font-family:'Sora',sans-serif;font-weight:800;font-size:2rem;color:var(--qorange);">+174%</p>
+            <p style="font-size:0.75rem;color:rgba(255,255,255,0.45);">Revenue</p>
+          </div>
+          <div style="text-align:center;">
+            <p style="font-family:'Sora',sans-serif;font-weight:800;font-size:2rem;color:var(--qorange);">96%</p>
+            <p style="font-size:0.75rem;color:rgba(255,255,255,0.45);">Uptime</p>
+          </div>
+          <div style="text-align:center;">
+            <p style="font-family:'Sora',sans-serif;font-weight:800;font-size:2rem;color:var(--qorange);">-70%</p>
+            <p style="font-size:0.75rem;color:rgba(255,255,255,0.45);">Menu ops time</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SLIDE 8 — WHY QURATER
+  ══════════════════════════════════════════════════════════════ -->
+  <section class="section-dark py-24" style="background:#0D1A42;">
+    <div class="container">
+      <div class="section-label-wrap reveal">
+        <span class="section-pill light">Why Qurater</span>
+        <h2 class="display" style="color:white;">Built for the complexity of multi-location delivery.</h2>
+      </div>
+
+      <div class="why-grid">
+        <div class="why-card dark reveal reveal-d1">
+          <h3>Operator-built, not agency-built</h3>
+          <p>Qurater was built by people who ran delivery operations inside restaurant groups. Every feature was designed to solve a problem the team experienced firsthand — not observed from the outside.</p>
+        </div>
+        <div class="why-card light reveal reveal-d2">
+          <h3>Covers the full picture</h3>
+          <p>Most tools solve one part of the problem — a campaign tool, a reporting add-on, a menu editor. Qurater integrates all five capabilities in a single platform, so teams work from one source of truth instead of stitching together multiple tools.</p>
+        </div>
+        <div class="why-card light reveal reveal-d3">
+          <h3>Purpose-built for Romanian delivery platforms</h3>
+          <p>Qurater isn't a generic BI tool adapted for food delivery. It was designed specifically for Glovo, Bolt Food, and Wolt — with the integrations, data models, and operational logic those platforms require.</p>
+        </div>
+        <div class="why-card dark reveal reveal-d4">
+          <h3>Proven at enterprise scale</h3>
+          <p>Qurater has managed enterprise accounts since launch with zero churn. The platform was built to handle the complexity of large, multi-location operations — not scaled up from a single-location tool.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SLIDE 9 — HOW WE WORK TOGETHER
+  ══════════════════════════════════════════════════════════════ -->
+  <section class="section-bg py-24">
+    <div class="container">
+      <div class="section-label-wrap reveal">
+        <span class="section-pill">Getting started</span>
+        <h2 class="display" style="color:var(--qnavy);">Up and running in under two weeks.</h2>
+        <p class="lead" style="max-width:560px;">Onboarding is structured to be low-risk and fast to value. Most enterprise clients are operational within two weeks of signing.</p>
+      </div>
+
+      <div class="timeline reveal">
+        <div class="timeline-step">
+          <div class="t-num">1</div>
+          <div class="t-week">Week 1</div>
+          <div class="t-title">Integration &amp; Setup</div>
+          <div class="t-desc">Connect Glovo, Bolt, and Wolt. Map all locations. Configure the dashboard for your team's workflow.</div>
+        </div>
+        <div class="timeline-step">
+          <div class="t-num">2</div>
+          <div class="t-week">Week 2</div>
+          <div class="t-title">Calibration</div>
+          <div class="t-desc">Align reporting logic to your internal KPIs. Set up menu and campaign management workflows.</div>
+        </div>
+        <div class="timeline-step">
+          <div class="t-num">3</div>
+          <div class="t-week">Weeks 3–4</div>
+          <div class="t-title">Pilot in Action</div>
+          <div class="t-desc">Your team starts using the platform across pilot locations. We monitor, support, and adjust in real time.</div>
+        </div>
+        <div class="timeline-step">
+          <div class="t-num accent">4</div>
+          <div class="t-week">Month 2+</div>
+          <div class="t-title">Full Rollout</div>
+          <div class="t-desc">Expand to all locations. Dedicated account manager engaged. Regular performance reviews built in.</div>
+        </div>
+      </div>
+
+      <div class="reveal mt-4" style="margin-top:2.5rem;background:white;border-radius:16px;padding:1.5rem 2rem;border:1px solid rgba(15,30,74,0.07);display:flex;align-items:center;gap:1rem;">
+        <div style="width:44px;height:44px;border-radius:50%;background:rgba(27,59,139,0.08);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">👤</div>
+        <p style="font-size:0.9rem;color:var(--muted);line-height:1.6;"><strong style="color:var(--qnavy);">Every enterprise client gets a dedicated Growth Account Manager</strong> — available for scheduled reviews, operational questions, and ongoing optimization support throughout the contract.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SLIDE 10 — NEXT STEP / PILOT
+  ══════════════════════════════════════════════════════════════ -->
+  <section id="next-step" class="section-dark py-24">
+    <div class="container">
+      <div class="section-label-wrap reveal">
+        <span class="section-pill light">The ask</span>
+        <h2 class="display" style="color:white;">A 30-day pilot on a defined set of locations.</h2>
+        <p class="lead-light" style="max-width:580px;">Enough locations to generate meaningful data. Focused enough to move fast and measure clearly.</p>
+      </div>
+
+      <div class="pilot-grid reveal">
+        <div class="pilot-card a">
+          <h3>What we'll measure</h3>
+          <ul>
+            <li>Time saved on reporting and menu management per week</li>
+            <li>Consistency of menu data across Glovo, Bolt, and Wolt</li>
+            <li>Campaign performance visibility and ROI per channel</li>
+            <li>Operational capacity per manager at current scale</li>
+            <li>Location-level performance gaps and quick wins</li>
+          </ul>
+        </div>
+        <div class="pilot-card b">
+          <h3>What you'll get</h3>
+          <ul>
+            <li>Full platform access for pilot locations</li>
+            <li>Dedicated onboarding and calibration support</li>
+            <li>Weekly performance review with Qurater team</li>
+            <li>AI-powered insights from day one</li>
+            <li>Clear picture of impact before any long-term commitment</li>
+          </ul>
+        </div>
+        <div class="pilot-card c">
+          <h3>The only ask</h3>
+          <ul>
+            <li>30 days and a defined set of pilot locations</li>
+            <li>Your team's honest operational feedback</li>
+            <li>One point of contact on your side</li>
+          </ul>
+          <p style="font-size:0.85rem;color:rgba(255,200,180,0.8);margin-top:1.25rem;line-height:1.6;font-style:italic;">If the data doesn't show meaningful operational improvement, we'll be the first to say so.</p>
+        </div>
+      </div>
+
+      <div class="reveal" style="text-align:center;margin-top:3rem;">
+        <a href="mailto:hello@myqurater.com" class="btn-primary" style="font-size:1rem;padding:15px 36px;">Request a Pilot → hello@myqurater.com</a>
+        <p style="font-size:0.82rem;color:rgba(255,255,255,0.35);margin-top:1rem;">No long-term commitment required for the pilot · www.myqurater.com</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SLIDE 11 — ABOUT QURATER
+  ══════════════════════════════════════════════════════════════ -->
+  <section class="section-dark py-24" style="background:#0D1A42;">
+    <div class="container">
+      <div class="section-label-wrap reveal">
+        <span class="section-pill light">About Qurater</span>
+        <h2 class="display" style="color:white;">Built by operators, engineered for scale.</h2>
+      </div>
+
+      <div class="grid-2 reveal" style="gap:3rem;align-items:start;">
+        <div>
+          <p style="font-size:0.95rem;line-height:1.75;color:rgba(255,255,255,0.65);margin-bottom:1.5rem;">
+            Qurater was founded in 2021 by a team that ran delivery operations inside restaurant groups in Romania. We built the platform because we needed it — and couldn't find it anywhere else.
+          </p>
+          <p style="font-size:0.95rem;line-height:1.75;color:rgba(255,255,255,0.65);margin-bottom:2rem;">
+            Today, Qurater serves brands across 450+ locations with a product team, a growth team, and advisors including former senior leaders at Glovo.
+          </p>
+
+          <div class="team-grid">
+            <div class="team-card">
+              <div class="team-avatar">OS</div>
+              <div class="team-name">Odai Shhab</div>
+              <div class="team-role">Co-Founder &amp; CEO</div>
+            </div>
+            <div class="team-card">
+              <div class="team-avatar">AI</div>
+              <div class="team-name">Andrei Iancu</div>
+              <div class="team-role">Co-Founder &amp; COO</div>
+            </div>
+            <div class="team-card">
+              <div class="team-avatar">CG</div>
+              <div class="team-name">Charles Gedeon</div>
+              <div class="team-role">CTO</div>
+            </div>
+            <div class="team-card">
+              <div class="team-avatar" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);">VR</div>
+              <div class="team-name">Victor Răcariu</div>
+              <div class="team-role">Advisor — Ex-Glovo SEE Managing Director</div>
+            </div>
+            <div class="team-card">
+              <div class="team-avatar" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);">AB</div>
+              <div class="team-name">Andreea Barbu</div>
+              <div class="team-role">Fractional Sales — Ex-Glovo Head of Sales</div>
+            </div>
+            <div></div>
+          </div>
+        </div>
+
+        <div class="numbers-panel">
+          <p style="font-family:'Sora',sans-serif;font-weight:700;color:white;font-size:1rem;margin-bottom:1.25rem;opacity:0.9;">By the numbers</p>
+          <div class="num-row">
+            <span class="num-val">50+</span>
+            <span class="num-desc">Brands on the platform</span>
+          </div>
+          <div class="num-row">
+            <span class="num-val">450+</span>
+            <span class="num-desc">Locations managed</span>
+          </div>
+          <div class="num-row">
+            <span class="num-val">0</span>
+            <span class="num-desc">Churned enterprise accounts</span>
+          </div>
+          <div class="num-row">
+            <span class="num-val">3</span>
+            <span class="num-desc">Platform integrations (Glovo, Bolt Food, Wolt)</span>
+          </div>
+          <div class="num-row">
+            <span class="num-val">€830K</span>
+            <span class="num-desc">Average annualized contract value</span>
+          </div>
+          <div class="num-row">
+            <span class="num-val">2021</span>
+            <span class="num-desc">Founded — built from inside the industry</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+      <span style="font-family:'Sora',sans-serif;font-weight:700;color:white;font-size:1rem;display:flex;align-items:center;gap:0.4rem;">Qurater<span style="width:6px;height:6px;background:#E84020;border-radius:50%;display:inline-block;"></span></span>
+      <p style="font-size:0.82rem;color:rgba(255,255,255,0.3);">Prepared exclusively for KFC Romania — Confidential</p>
+      <p style="font-size:0.82rem;color:rgba(255,255,255,0.3);">www.myqurater.com</p>
+    </div>
+  </footer>
+
+  <script>
+    // Nav scroll
+    const navbar = document.getElementById('navbar');
+    const progress = document.getElementById('progress');
+    window.addEventListener('scroll', () => {
+      navbar.classList.toggle('scrolled', window.scrollY > 50);
+      const max = document.body.scrollHeight - window.innerHeight;
+      progress.style.width = (window.scrollY / max * 100) + '%';
+    });
+
+    // Reveal on scroll
+    const reveals = document.querySelectorAll('.reveal');
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } });
+    }, { threshold: 0.1 });
+    reveals.forEach(r => io.observe(r));
+  </script>
+</body>
+</html>
